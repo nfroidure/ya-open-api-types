@@ -355,7 +355,7 @@ export type OpenAPI<
   paths?: OpenAPIPaths<D, X>;
   webhooks?: Record<string, OpenAPIPathItem<D, X>>;
   components?: OpenAPIComponents<D, X>;
-  security?: OpenAPIComponents<D, X>;
-  tags?: OpenAPITag<X>;
+  security?: OpenAPISecurityRequirement[];
+  tags?: OpenAPITag<X>[];
   externalDocs?: OpenAPIComponents<D, X>;
 };
