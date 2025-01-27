@@ -225,7 +225,7 @@ export type OpenAPISecurityScheme<X extends OpenAPIExtension> = {
   | {
       type: 'apiKey';
       name: string;
-      in: ('query' | 'header' | 'cookie')[];
+      in: 'query' | 'header' | 'cookie';
     }
   | ({
       type: 'http';
