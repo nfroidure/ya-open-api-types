@@ -423,12 +423,10 @@ export async function resolveNamespace<T extends object>(
 
 export async function ensureResolvedObject<
   T extends OpenAPI<unknown, OpenAPIExtension>,
-  U extends OpenAPIReference<unknown>,
->(root: T, object: U): Promise<U extends OpenAPIReference<infer R> ? R : never>;
-export async function ensureResolvedObject<
-  T extends OpenAPI<unknown, OpenAPIExtension>,
-  U extends OpenAPIReferenceable<unknown, OpenAPIExtension>,
->(root: T, object: U): Promise<U>;
+  U extends
+    | OpenAPIReference<unknown>
+    | OpenAPIReferenceable<unknown, OpenAPIExtension>,
+>(root: T, object: U): Promise<U extends OpenAPIReference<infer R> ? R : U>;
 export async function ensureResolvedObject<
   T extends OpenAPI<unknown, OpenAPIExtension>,
   U,

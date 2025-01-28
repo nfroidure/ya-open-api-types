@@ -195,7 +195,9 @@ describe('resolveNamespace', () => {
 });
 
 describe('ensureResolvedObject', () => {
-  let resolvedParameter: OpenAPIParameter<JSONSchema, OpenAPIExtension>;
+  let resolvedParameter:
+    | OpenAPIParameter<JSONSchema, OpenAPIExtension>
+    | OpenAPIReference<OpenAPIParameter<JSONSchema, OpenAPIExtension>>;
 
   beforeAll(async () => {
     resolvedParameter = (await resolveNamespace(openAPI, [
