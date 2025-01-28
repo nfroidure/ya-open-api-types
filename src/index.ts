@@ -1,5 +1,6 @@
 import { type JsonValue } from 'type-fest';
-import { type JSONSchema } from 'ya-json-schema-types';
+import { ExpressiveJSONSchema, type JSONSchema } from 'ya-json-schema-types';
+import { YError } from 'yerror';
 
 /**
  * Default generic types matching specification extensions
@@ -35,12 +36,12 @@ export type OpenAPIEmail = string & {
 export type OpenAPIStatusCode = number & {
   _type?: 'oas:status-code';
 };
-export type OpenAPIExample = {
+export type OpenAPIExample<T extends JsonValue = JsonValue> = {
   summary?: string;
   description?: OpenAPIDescription;
 } & (
   | {
-      value: JsonValue;
+      value: T;
     }
   | {
       externalValue: string;
@@ -359,3 +360,112 @@ export type OpenAPI<
   tags?: OpenAPITag<X>[];
   externalDocs?: OpenAPIComponents<D, X>;
 };
+
+export function relativeReferenceToNamespace(ref: string): string[] {
+  if (!ref.startsWith('#/')) {
+    throw new YError('E_UNSUPPORTED_REF', ref);
+  }
+
+  const namespace = ref.replace(/^#\//, '').split('/');
+
+  if (namespace.some((name) => name === '')) {
+    throw new YError('E_BAD_REF', ref, namespace);
+  }
+
+  return namespace;
+}
+
+export async function resolveNamespace<T extends OpenAPI>(
+  root: T,
+  namespace: string[],
+): Promise<
+  T extends OpenAPI<infer D, infer X>
+    ? OpenAPIReferenceable<D, X> | OpenAPIReference<OpenAPIReferenceable<D, X>>
+    : never
+>;
+export async function resolveNamespace<T extends ExpressiveJSONSchema>(
+  root: T,
+  namespace: string[],
+): Promise<ExpressiveJSONSchema>;
+export async function resolveNamespace<T extends JSONSchema>(
+  root: T,
+  namespace: string[],
+): Promise<JSONSchema>;
+export async function resolveNamespace<T extends object>(
+  root: T,
+  namespace: string[],
+): Promise<unknown>;
+export async function resolveNamespace<T extends object>(
+  root: T,
+  namespace: string[],
+): Promise<unknown> {
+  let resolved = root;
+
+  for (const name of namespace) {
+    if (typeof resolved !== 'object' || !resolved) {
+      throw new YError('E_BAD_RESOLVE_BASE', namespace, name);
+    }
+    if (!(name in resolved)) {
+      throw new YError('E_BAD_RESOLVE_PROP', namespace, name);
+    }
+
+    resolved = resolved[name];
+  }
+
+  if (typeof resolved === 'undefined' || resolved === null) {
+    throw new YError('E_BAD_RESOLVE_LEAF', namespace);
+  }
+
+  return resolved as T extends OpenAPI<infer D, infer X>
+    ? OpenAPIReferenceable<D, X>
+    : T;
+}
+
+export async function ensureResolvedObject<
+  T extends OpenAPI<unknown, OpenAPIExtension>,
+  U extends OpenAPIReference<unknown>,
+>(root: T, object: U): Promise<U extends OpenAPIReference<infer R> ? R : never>;
+export async function ensureResolvedObject<
+  T extends OpenAPI<unknown, OpenAPIExtension>,
+  U extends OpenAPIReferenceable<unknown, OpenAPIExtension>,
+>(root: T, object: U): Promise<U>;
+export async function ensureResolvedObject<
+  T extends OpenAPI<unknown, OpenAPIExtension>,
+  U,
+>(
+  root: T,
+  object: U,
+): Promise<
+  T extends OpenAPI<infer D, infer X> ? OpenAPIReferenceable<D, X> : never
+>;
+export async function ensureResolvedObject<
+  T extends ExpressiveJSONSchema,
+  U extends ExpressiveJSONSchema,
+>(root: T, object: U): Promise<ExpressiveJSONSchema>;
+export async function ensureResolvedObject<
+  T extends JSONSchema,
+  U extends JSONSchema,
+>(root: T, object: U): Promise<JSONSchema>;
+export async function ensureResolvedObject<T extends object, U extends object>(
+  root: T,
+  object: U,
+): Promise<unknown>;
+export async function ensureResolvedObject<T extends object, U extends object>(
+  root: T,
+  object: U,
+): Promise<unknown> {
+  let resolvedObject = object;
+
+  while (
+    typeof resolvedObject === 'object' &&
+    resolvedObject &&
+    '$ref' in resolvedObject
+  ) {
+    resolvedObject = (await resolveNamespace(
+      root,
+      relativeReferenceToNamespace(resolvedObject.$ref as string),
+    )) as unknown as U;
+  }
+
+  return resolvedObject;
+}

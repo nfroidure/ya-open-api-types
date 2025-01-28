@@ -39,6 +39,9 @@ const myOpenAPI: OpenAPI<
 };
 ```
 
+The package also provides a few helpers to deal with OpenAPI/JSONSchemas
+references (only local file anchored references are supported).
+
 [//]: # (::contents:end)
 
 # Authors

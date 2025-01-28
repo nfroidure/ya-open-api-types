@@ -38,7 +38,7 @@
     "prettier": "prettier --write 'src/**/*.ts'",
     "preversion": "npm t && npm run lint && npm run metapak -- -s && npm run build",
     "rebuild": "swc ./src -s -d dist -C jsc.target=es2022",
-    "test": "echo \"WARNING: No tests specified\" && npm run jest",
+    "test": "npm run jest",
     "type-check": "tsc --pretty --noEmit",
     "version": "npm run changelog"
   },
@@ -79,7 +79,8 @@
   },
   "dependencies": {
     "type-fest": "^4.33.0",
-    "ya-json-schema-types": "^1.0.0"
+    "ya-json-schema-types": "^1.0.1",
+    "yerror": "^8.0.0"
   },
   "contributors": [],
   "engines": {
