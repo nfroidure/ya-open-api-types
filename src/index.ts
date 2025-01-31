@@ -1,5 +1,5 @@
-import { type JsonValue } from 'type-fest';
-import { ExpressiveJSONSchema, type JSONSchema } from 'ya-json-schema-types';
+import { type JsonObject, type JsonValue } from 'type-fest';
+import { type ExpressiveJSONSchema, type JSONSchema } from 'ya-json-schema-types';
 import { YError } from 'yerror';
 
 /**
@@ -146,15 +146,14 @@ export type OpenAPIParameter<D, X extends OpenAPIExtension> = {
   (
     | {
         schema: D;
-        style?: (
+        style?:
           | 'matrix'
           | 'label'
           | 'simple'
           | 'form'
           | 'spaceDelimited'
           | 'pipeDelimited'
-          | 'deepObject'
-        )[];
+          | 'deepObject';
         explode?: boolean;
         allowReserved?: boolean;
         example?: JsonValue;
@@ -466,4 +465,161 @@ export async function ensureResolvedObject<T extends object, U extends object>(
   }
 
   return resolvedObject;
+}
+
+export const PATH_ITEM_METHODS = [
+  'get',
+  'put',
+  'post',
+  'delete',
+  'options',
+  'head',
+  'patch',
+  'trace',
+] as const;
+
+export function pathItemToOperationMap<
+  T extends OpenAPIPathItem<unknown, OpenAPIExtension>,
+>(
+  pathItem: T,
+): Record<
+  string,
+  T extends OpenAPIPathItem<infer D, infer X> ? OpenAPIOperation<D, X> : never
+> {
+  const operationMap: Record<
+    string,
+    T extends OpenAPIPathItem<infer D, infer X> ? OpenAPIOperation<D, X> : never
+  > = {};
+
+  for (const method of PATH_ITEM_METHODS) {
+    if (method in pathItem && pathItem[method]) {
+      operationMap[method] = pathItem[method] as T extends OpenAPIPathItem<
+        infer D,
+        infer X
+      >
+        ? OpenAPIOperation<D, X>
+        : never;
+    }
+  }
+
+  return operationMap;
+}
+
+type ComponentType = keyof NonNullable<OpenAPI['components']>;
+
+export const COMPONENTS_TYPES: ComponentType[] = [
+  'schemas',
+  'responses',
+  'parameters',
+  'examples',
+  'requestBodies',
+  'headers',
+];
+
+export async function cleanupOpenAPI(api: OpenAPI): Promise<OpenAPI> {
+  const usedReferences = [
+    ...new Set([
+      ...(await collectUsedReferences(
+        api as JsonObject,
+        (api.paths || {}) as JsonValue,
+      )),
+      ...(await collectUsedReferences(
+        api as JsonObject,
+        (api.webhooks || {}) as JsonValue,
+      )),
+    ]),
+  ];
+
+  return {
+    ...api,
+    components: {
+      ...(Object.keys(api?.components || {}) as ComponentType[]).reduce(
+        (cleanedComponents, componentType) => ({
+          ...cleanedComponents,
+          [componentType]: COMPONENTS_TYPES.includes(componentType)
+            ? Object.keys(api?.components?.[componentType] || {})
+                .filter((key) =>
+                  usedReferences.includes(
+                    `#/components/${componentType}/${key}`,
+                  ),
+                )
+                .reduce(
+                  (cleanedComponents, key) => ({
+                    ...cleanedComponents,
+                    [key]: api.components?.[componentType]?.[key],
+                  }),
+                  {},
+                )
+            : api.components?.[componentType],
+        }),
+        {},
+      ),
+    },
+  };
+}
+
+/** Collect all really used references in a JSON
+ * using references */
+export async function collectUsedReferences(
+  rootNode: JsonObject,
+  node: JsonValue,
+  usedReferences: string[] = [],
+) {
+  if (
+    typeof node === 'boolean' ||
+    typeof node === 'string' ||
+    typeof node === 'number'
+  ) {
+    return usedReferences;
+  }
+
+  if (node instanceof Array) {
+    for (const item of node) {
+      usedReferences = await collectUsedReferences(
+        rootNode,
+        item,
+        usedReferences,
+      );
+    }
+    return usedReferences;
+  }
+
+  if (typeof node === 'object') {
+    if (node === null) {
+      return usedReferences;
+    }
+    const keys = Object.keys(node);
+
+    if (
+      '$ref' in node &&
+      typeof node.$ref === 'string' &&
+      !usedReferences.includes(node.$ref)
+    ) {
+      const referencedObject = (await resolveNamespace(
+        rootNode,
+        relativeReferenceToNamespace(node.$ref),
+      )) as JsonValue;
+
+      usedReferences.push(node.$ref);
+      usedReferences = await collectUsedReferences(
+        rootNode,
+        referencedObject,
+        usedReferences,
+      );
+    }
+
+    for (const key of keys) {
+      if (key === '$ref') {
+        continue;
+      }
+      usedReferences = await collectUsedReferences(
+        rootNode,
+        node[key] || null,
+        usedReferences,
+      );
+    }
+    return usedReferences;
+  }
+
+  return usedReferences;
 }
