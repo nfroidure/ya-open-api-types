@@ -1,3 +1,12 @@
+## [1.2.2](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.1...v1.2.2) (2025-05-07)
+
+
+### Bug Fixes
+
+* **types:** oauth flows scopes ([db338ca](https://github.com/nfroidure/ya-open-api-types/commit/db338cab532619952ade276b1c68611200ef5176))
+
+
+
 ## [1.2.1](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.0...v1.2.1) (2025-05-07)
 
 
