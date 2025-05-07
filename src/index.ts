@@ -179,7 +179,7 @@ export type OpenAPIHeader<D, X extends OpenAPIExtension> = {
 } & (
   | {
       schema: D;
-      style?: 'simple'[];
+      style?: 'simple';
       explode?: boolean;
       allowReserved?: boolean;
       example?: JsonValue;
@@ -195,7 +195,7 @@ export type OpenAPIHeader<D, X extends OpenAPIExtension> = {
   X;
 export type OpenAPIOAuthFlow<X extends OpenAPIExtension, F extends string> = {
   refreshUrl?: OpenAPIURL;
-  scope: string[];
+  scopes: string[];
 } & (F extends 'implicit' | 'authorizationCode'
   ? {
       authorizationUrl: OpenAPIURL;
