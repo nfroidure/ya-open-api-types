@@ -1,3 +1,5 @@
+# [2.0.0](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.2...v2.0.0) (2026-03-27)
+
 ## [1.2.2](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.1...v1.2.2) (2025-05-07)
 
 
