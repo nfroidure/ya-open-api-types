@@ -1,13 +1,14 @@
 import { type JsonObject, type JsonValue } from 'type-fest';
-import { type ExpressiveJSONSchema, type JSONSchema } from 'ya-json-schema-types';
+import {
+  type ExpressiveJSONSchema,
+  type JSONSchema,
+} from 'ya-json-schema-types';
 import { YError } from 'yerror';
 
 /**
  * Default generic types matching specification extensions
  */
-export type OpenAPIExtension = {
-  [key: `x-${string}`]: JsonValue;
-};
+export type OpenAPIExtension = Record<`x-${string}`, JsonValue>;
 /** Branded type for strings that may contain common mark syntax */
 export type OpenAPIDescription = string & {
   _type?: 'oas:description';
@@ -92,12 +93,12 @@ export type OpenAPIReferenceable<D, X extends OpenAPIExtension> =
   | OpenAPIPathItem<D, X>
   | OpenAPICallback<D, X>
   | D;
-export type OpenAPIReference<
+export interface OpenAPIReference<
   T extends OpenAPIReferenceable<unknown, OpenAPIExtension>,
-> = {
+> {
   $ref: string;
   _targetType?: T;
-};
+}
 export type OpenAPIEncoding<D, X extends OpenAPIExtension> = {
   contentType?: string;
   headers?: Record<
@@ -211,12 +212,12 @@ export type OpenAPIOAuthFlow<X extends OpenAPIExtension, F extends string> = {
         tokenUrl?: OpenAPIURL;
       }) &
   X;
-export type OpenAPIOAuthFlows<X extends OpenAPIExtension> = {
+export interface OpenAPIOAuthFlows<X extends OpenAPIExtension> {
   implicit?: OpenAPIOAuthFlow<X, 'implicit'>;
   password?: OpenAPIOAuthFlow<X, 'password'>;
   clientCredentials?: OpenAPIOAuthFlow<X, 'clientCredentials'>;
   authorizationCode?: OpenAPIOAuthFlow<X, 'authorizationCode'>;
-};
+}
 export type OpenAPISecurityRequirement = Record<string, string[]>;
 export type OpenAPISecurityScheme<X extends OpenAPIExtension> = {
   description?: OpenAPIDescription;
@@ -339,15 +340,16 @@ export type OpenAPIComponents<D, X extends OpenAPIExtension> = {
   >;
   pathItems?: Record<string, OpenAPIPathItem<D, X>>;
 } & X;
-export type OpenAPIPaths<D, X extends OpenAPIExtension> = {
-  [key: `/${string}`]: OpenAPIPathItem<D, X>;
-};
+export type OpenAPIPaths<D, X extends OpenAPIExtension> = Record<
+  `/${string}`,
+  OpenAPIPathItem<D, X>
+>;
 
 /** Open API types for the 3.1 specification */
-export type OpenAPI<
+export interface OpenAPI<
   D = JSONSchema,
   X extends OpenAPIExtension = OpenAPIExtension,
-> = {
+> {
   openapi: '3.1' | '3.1.0' | '3.1.1';
   info: OpenAPIInfo<X>;
   jsonSchemaDialect?: string;
@@ -358,17 +360,17 @@ export type OpenAPI<
   security?: OpenAPISecurityRequirement[];
   tags?: OpenAPITag<X>[];
   externalDocs?: OpenAPIComponents<D, X>;
-};
+}
 
 export function relativeReferenceToNamespace(ref: string): string[] {
   if (!ref.startsWith('#/')) {
-    throw new YError('E_UNSUPPORTED_REF', ref);
+    throw new YError('E_UNSUPPORTED_REF', [ref]);
   }
 
   const namespace = ref.replace(/^#\//, '').split('/');
 
   if (namespace.some((name) => name === '')) {
-    throw new YError('E_BAD_REF', ref, namespace);
+    throw new YError('E_BAD_REF', [ref, namespace]);
   }
 
   return namespace;
@@ -402,17 +404,17 @@ export async function resolveNamespace<T extends object>(
 
   for (const name of namespace) {
     if (typeof resolved !== 'object' || !resolved) {
-      throw new YError('E_BAD_RESOLVE_BASE', namespace, name);
+      throw new YError('E_BAD_RESOLVE_BASE', [namespace, name]);
     }
     if (!(name in resolved)) {
-      throw new YError('E_BAD_RESOLVE_PROP', namespace, name);
+      throw new YError('E_BAD_RESOLVE_PROP', [namespace, name]);
     }
 
-    resolved = resolved[name];
+    resolved = (resolved as Record<string, T>)[name];
   }
 
   if (typeof resolved === 'undefined' || resolved === null) {
-    throw new YError('E_BAD_RESOLVE_LEAF', namespace);
+    throw new YError('E_BAD_RESOLVE_LEAF', [namespace]);
   }
 
   return resolved as T extends OpenAPI<infer D, infer X>
@@ -520,11 +522,11 @@ export async function cleanupOpenAPI(api: OpenAPI): Promise<OpenAPI> {
   const usedReferences = [
     ...new Set([
       ...(await collectUsedReferences(
-        api as JsonObject,
+        api as unknown as JsonObject,
         (api.paths || {}) as JsonValue,
       )),
       ...(await collectUsedReferences(
-        api as JsonObject,
+        api as unknown as JsonObject,
         (api.webhooks || {}) as JsonValue,
       )),
     ]),
@@ -546,7 +548,9 @@ export async function cleanupOpenAPI(api: OpenAPI): Promise<OpenAPI> {
                 .reduce(
                   (cleanedComponents, key) => ({
                     ...cleanedComponents,
-                    [key]: api.components?.[componentType]?.[key],
+                    [key]: (
+                      api.components?.[componentType] as Record<string, string>
+                    )?.[key],
                   }),
                   {},
                 )

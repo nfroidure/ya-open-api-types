@@ -105,20 +105,20 @@ describe('relativeReferenceToNamespace', () => {
     expect(
       relativeReferenceToNamespace('#/components/parameters/TestParameter'),
     ).toMatchInlineSnapshot(`
-[
-  "components",
-  "parameters",
-  "TestParameter",
-]
-`);
+     [
+       "components",
+       "parameters",
+       "TestParameter",
+     ]
+    `);
     expect(relativeReferenceToNamespace('#/components/schemas/TestSchema'))
       .toMatchInlineSnapshot(`
-[
-  "components",
-  "schemas",
-  "TestSchema",
-]
-`);
+     [
+       "components",
+       "schemas",
+       "TestSchema",
+     ]
+    `);
   });
 
   test('should fail with unsupported refs', () => {
@@ -129,7 +129,7 @@ describe('relativeReferenceToNamespace', () => {
       throw new YError('E_UNEXPECTED_SUCCESS');
     } catch (err) {
       expect(err).toMatchInlineSnapshot(
-        `[YError: E_UNSUPPORTED_REF (http://example.com/#/components/parameters/TestParameter): E_UNSUPPORTED_REF]`,
+        `[YError: E_UNSUPPORTED_REF (["http://example.com/#/components/parameters/TestParameter"]): E_UNSUPPORTED_REF]`,
       );
     }
   });
@@ -144,14 +144,14 @@ describe('resolveNamespace', () => {
     ]);
 
     expect(resolved).toMatchInlineSnapshot(`
-{
-  "in": "query",
-  "name": "test",
-  "schema": {
-    "$ref": "#/components/schemas/TestSchema",
-  },
-}
-`);
+     {
+       "in": "query",
+       "name": "test",
+       "schema": {
+         "$ref": "#/components/schemas/TestSchema",
+       },
+     }
+    `);
   });
 
   test('should work with existing namespaces on jsonSchema', async () => {
@@ -166,10 +166,10 @@ describe('resolveNamespace', () => {
     ]);
 
     expect(resolved).toMatchInlineSnapshot(`
-{
-  "type": "string",
-}
-`);
+     {
+       "type": "string",
+     }
+    `);
   });
 
   test('should fail with not existing namespace', async () => {
@@ -178,7 +178,7 @@ describe('resolveNamespace', () => {
       throw new YError('E_UNEXPECTED_SUCCESS');
     } catch (err) {
       expect(err).toMatchInlineSnapshot(
-        `[YError: E_BAD_RESOLVE_PROP ($defs,test2, test2): E_BAD_RESOLVE_PROP]`,
+        `[YError: E_BAD_RESOLVE_PROP ([["$defs","test2"],"test2"]): E_BAD_RESOLVE_PROP]`,
       );
     }
   });
@@ -193,7 +193,7 @@ describe('resolveNamespace', () => {
       throw new YError('E_UNEXPECTED_SUCCESS');
     } catch (err) {
       expect(err).toMatchInlineSnapshot(
-        `[YError: E_BAD_RESOLVE_PROP ($defs,fortest,const, fortest): E_BAD_RESOLVE_PROP]`,
+        `[YError: E_BAD_RESOLVE_PROP ([["$defs","fortest","const"],"fortest"]): E_BAD_RESOLVE_PROP]`,
       );
     }
   });
@@ -216,14 +216,14 @@ describe('ensureResolvedObject', () => {
     const fullyResoved = await ensureResolvedObject(openAPI, resolvedParameter);
 
     expect(fullyResoved).toMatchInlineSnapshot(`
-{
-  "in": "query",
-  "name": "test",
-  "schema": {
-    "$ref": "#/components/schemas/TestSchema",
-  },
-}
-`);
+     {
+       "in": "query",
+       "name": "test",
+       "schema": {
+         "$ref": "#/components/schemas/TestSchema",
+       },
+     }
+    `);
   });
 
   test('should work with existing namespaces on openAPI 2', async () => {
@@ -232,10 +232,10 @@ describe('ensureResolvedObject', () => {
     } as OpenAPIReference<JSONSchema>);
 
     expect(fullyResoved).toMatchInlineSnapshot(`
-{
-  "type": "string",
-}
-`);
+     {
+       "type": "string",
+     }
+    `);
   });
 
   test('should work with existing namespaces on jsonSchema', async () => {
@@ -254,7 +254,7 @@ describe('ensureResolvedObject', () => {
       throw new YError('E_UNEXPECTED_SUCCESS');
     } catch (err) {
       expect(err).toMatchInlineSnapshot(
-        `[YError: E_BAD_RESOLVE_PROP (components,schemas,NotTestSchema, NotTestSchema): E_BAD_RESOLVE_PROP]`,
+        `[YError: E_BAD_RESOLVE_PROP ([["components","schemas","NotTestSchema"],"NotTestSchema"]): E_BAD_RESOLVE_PROP]`,
       );
     }
   });
@@ -267,7 +267,7 @@ describe('ensureResolvedObject', () => {
       throw new YError('E_UNEXPECTED_SUCCESS');
     } catch (err) {
       expect(err).toMatchInlineSnapshot(
-        `[YError: E_BAD_RESOLVE_PROP ($defs,fortest,const, $defs): E_BAD_RESOLVE_PROP]`,
+        `[YError: E_BAD_RESOLVE_PROP ([["$defs","fortest","const"],"$defs"]): E_BAD_RESOLVE_PROP]`,
       );
     }
   });
@@ -280,16 +280,16 @@ describe('pathItemToOperationMap', () => {
     );
 
     expect(fullyResoved).toMatchInlineSnapshot(`
-{
-  "get": {
-    "parameters": [
-      {
-        "$ref": "#/components/parameters/TestParameterAlias",
-      },
-    ],
-  },
-}
-`);
+     {
+       "get": {
+         "parameters": [
+           {
+             "$ref": "#/components/parameters/TestParameterAlias",
+           },
+         ],
+       },
+     }
+    `);
   });
 });
 
@@ -421,164 +421,164 @@ describe('collectUsedReferences', () => {
         sampleAPI.paths as unknown as JsonValue,
       ),
     ).toMatchInlineSnapshot(`
-[
-  "#/components/parameters/duration",
-  "#/components/schemas/Recursive",
-]
-`);
+     [
+       "#/components/parameters/duration",
+       "#/components/schemas/Recursive",
+     ]
+    `);
     expect(
       await collectUsedReferences(
         sampleAPI as unknown as JsonObject,
         sampleAPI.webhooks as unknown as JsonValue,
       ),
     ).toMatchInlineSnapshot(`
-[
-  "#/components/schemas/Echo",
-  "#/components/schemas/AString",
-]
-`);
+     [
+       "#/components/schemas/Echo",
+       "#/components/schemas/AString",
+     ]
+    `);
   });
 });
 
 describe('cleanupOpenAPI', () => {
   test('should remove unused refs in an OpenAPI document', async () => {
     expect(await cleanupOpenAPI(sampleAPI)).toMatchInlineSnapshot(`
-{
-  "components": {
-    "parameters": {
-      "duration": {
-        "description": "Duration in milliseconds",
-        "in": "query",
-        "name": "duration",
-        "required": true,
-        "schema": {
-          "type": "number",
-        },
-      },
-    },
-    "schemas": {
-      "AString": {
-        "type": "string",
-      },
-      "Echo": {
-        "additionalProperties": false,
-        "properties": {
-          "echo": {
-            "$ref": "#/components/schemas/AString",
-          },
-        },
-        "required": [
-          "echo",
-        ],
-        "type": "object",
-      },
-      "Recursive": {
-        "additionalProperties": false,
-        "properties": {
-          "child": {
-            "$ref": "#/components/schemas/Recursive",
-          },
-        },
-        "required": [],
-        "type": "object",
-      },
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "description": "Bearer authentication with a user API token",
-        "scheme": "bearer",
-        "type": "http",
-      },
-      "fakeAuth": {
-        "description": "A fake authentication for development purpose.",
-        "in": "header",
-        "name": "Authorization",
-        "type": "apiKey",
-      },
-    },
-  },
-  "info": {
-    "description": "A basic Whook server",
-    "title": "@whook/example",
-    "version": "8.2.0",
-  },
-  "openapi": "3.1.0",
-  "paths": {
-    "/delay": {
-      "get": {
-        "operationId": "getDelay",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/duration",
-          },
-        ],
-        "responses": {
-          "204": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Recursive",
-                },
-              },
-            },
-            "description": "Delay expired",
-          },
-        },
-        "summary": "Answer after a given delay.",
-        "tags": [
-          "example",
-        ],
-      },
-    },
-  },
-  "servers": [
-    {
-      "url": "http://localhost:8001/v8",
-    },
-  ],
-  "tags": [
-    {
-      "name": "system",
-    },
-  ],
-  "webhooks": {
-    "echo": {
-      "put": {
-        "operationId": "putEcho",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "echo": "Repeat this!",
-              },
-              "schema": {
-                "$ref": "#/components/schemas/Echo",
-              },
-            },
-          },
-          "description": "The input sentence",
-          "required": true,
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Echo",
-                },
-              },
-            },
-            "description": "The actual echo",
-          },
-        },
-        "summary": "Echoes what it takes.",
-        "tags": [
-          "example",
-        ],
-      },
-    },
-  },
-}
-`);
+     {
+       "components": {
+         "parameters": {
+           "duration": {
+             "description": "Duration in milliseconds",
+             "in": "query",
+             "name": "duration",
+             "required": true,
+             "schema": {
+               "type": "number",
+             },
+           },
+         },
+         "schemas": {
+           "AString": {
+             "type": "string",
+           },
+           "Echo": {
+             "additionalProperties": false,
+             "properties": {
+               "echo": {
+                 "$ref": "#/components/schemas/AString",
+               },
+             },
+             "required": [
+               "echo",
+             ],
+             "type": "object",
+           },
+           "Recursive": {
+             "additionalProperties": false,
+             "properties": {
+               "child": {
+                 "$ref": "#/components/schemas/Recursive",
+               },
+             },
+             "required": [],
+             "type": "object",
+           },
+         },
+         "securitySchemes": {
+           "bearerAuth": {
+             "description": "Bearer authentication with a user API token",
+             "scheme": "bearer",
+             "type": "http",
+           },
+           "fakeAuth": {
+             "description": "A fake authentication for development purpose.",
+             "in": "header",
+             "name": "Authorization",
+             "type": "apiKey",
+           },
+         },
+       },
+       "info": {
+         "description": "A basic Whook server",
+         "title": "@whook/example",
+         "version": "8.2.0",
+       },
+       "openapi": "3.1.0",
+       "paths": {
+         "/delay": {
+           "get": {
+             "operationId": "getDelay",
+             "parameters": [
+               {
+                 "$ref": "#/components/parameters/duration",
+               },
+             ],
+             "responses": {
+               "204": {
+                 "content": {
+                   "application/json": {
+                     "schema": {
+                       "$ref": "#/components/schemas/Recursive",
+                     },
+                   },
+                 },
+                 "description": "Delay expired",
+               },
+             },
+             "summary": "Answer after a given delay.",
+             "tags": [
+               "example",
+             ],
+           },
+         },
+       },
+       "servers": [
+         {
+           "url": "http://localhost:8001/v8",
+         },
+       ],
+       "tags": [
+         {
+           "name": "system",
+         },
+       ],
+       "webhooks": {
+         "echo": {
+           "put": {
+             "operationId": "putEcho",
+             "requestBody": {
+               "content": {
+                 "application/json": {
+                   "example": {
+                     "echo": "Repeat this!",
+                   },
+                   "schema": {
+                     "$ref": "#/components/schemas/Echo",
+                   },
+                 },
+               },
+               "description": "The input sentence",
+               "required": true,
+             },
+             "responses": {
+               "200": {
+                 "content": {
+                   "application/json": {
+                     "schema": {
+                       "$ref": "#/components/schemas/Echo",
+                     },
+                   },
+                 },
+                 "description": "The actual echo",
+               },
+             },
+             "summary": "Echoes what it takes.",
+             "tags": [
+               "example",
+             ],
+           },
+         },
+       },
+     }
+    `);
   });
 });
