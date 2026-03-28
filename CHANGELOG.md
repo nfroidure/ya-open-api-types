@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.0...v2.0.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* **types:** add forgotten referenceable types ([4b10231](https://github.com/nfroidure/ya-open-api-types/commit/4b10231be3a1d033dce6767a717dbcac69980fb3))
+
 # [2.0.0](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.2...v2.0.0) (2026-03-27)
 
 ## [1.2.2](https://github.com/nfroidure/ya-open-api-types/compare/v1.2.1...v1.2.2) (2025-05-07)
