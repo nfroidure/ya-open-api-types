@@ -89,9 +89,14 @@ export type OpenAPIServer<X extends OpenAPIExtension> = {
 export type OpenAPIReferenceable<D, X extends OpenAPIExtension> =
   | OpenAPIHeader<D, X>
   | OpenAPIResponse<D, X>
+  | OpenAPIRequestBody<D, X>
   | OpenAPIParameter<D, X>
   | OpenAPIPathItem<D, X>
+  | OpenAPIMediaType<D, X>
+  | OpenAPIExample
+  | OpenAPILink<X>
   | OpenAPICallback<D, X>
+  | OpenAPISecurityScheme<X>
   | D;
 export interface OpenAPIReference<
   T extends OpenAPIReferenceable<unknown, OpenAPIExtension>,
