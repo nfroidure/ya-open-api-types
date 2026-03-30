@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.1...v2.0.2) (2026-03-30)
+
+
+### Bug Fixes
+
+* **types:** add referenceable schema to types ([5e4072d](https://github.com/nfroidure/ya-open-api-types/commit/5e4072d2e253b162340e54750d19cbdfab01d531))
+
 ## [2.0.1](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.0...v2.0.1) (2026-03-28)
 
 
