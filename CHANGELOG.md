@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.3...v2.1.0) (2026-03-30)
+
+
+### Features
+
+* **lib:** add some type casting utilities ([a31d089](https://github.com/nfroidure/ya-open-api-types/commit/a31d08909d896f41a509d4e5c3790d0a145b81b8))
+
 ## [2.0.3](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.2...v2.0.3) (2026-03-30)
 
 
