@@ -4,6 +4,23 @@ import {
   type JSONSchema,
 } from 'ya-json-schema-types';
 import { YError } from 'yerror';
+import {
+  PATH_SEPARATOR,
+  type OpenAPIPath,
+  isValidOpenAPIPath,
+  PATH_ITEM_METHODS,
+  type OpenAPIMethod,
+  isValidOpenAPIMethod,
+} from './lib.js';
+
+export {
+  PATH_SEPARATOR,
+  type OpenAPIPath,
+  isValidOpenAPIPath,
+  PATH_ITEM_METHODS,
+  type OpenAPIMethod,
+  isValidOpenAPIMethod,
+};
 
 /**
  * Default generic types matching specification extensions
@@ -279,20 +296,13 @@ export type OpenAPIPathItem<D, X extends OpenAPIExtension> = {
   $ref?: string;
   summary?: string;
   description?: string;
-  get?: OpenAPIOperation<D, X>;
-  put?: OpenAPIOperation<D, X>;
-  post?: OpenAPIOperation<D, X>;
-  delete?: OpenAPIOperation<D, X>;
-  options?: OpenAPIOperation<D, X>;
-  head?: OpenAPIOperation<D, X>;
-  patch?: OpenAPIOperation<D, X>;
-  trace?: OpenAPIOperation<D, X>;
   servers?: OpenAPIServer<X>[];
   parameters?: (
     | OpenAPIParameter<D, X>
     | OpenAPIReference<OpenAPIParameter<D, X>>
   )[];
-} & X;
+} & Partial<Record<OpenAPIMethod, OpenAPIOperation<D, X>>> &
+  X;
 export type OpenAPIOperation<D, X extends OpenAPIExtension> = {
   tags?: string[];
   summary?: string;
@@ -345,8 +355,9 @@ export type OpenAPIComponents<D, X extends OpenAPIExtension> = {
   >;
   pathItems?: Record<string, OpenAPIPathItem<D, X>>;
 } & X;
+
 export type OpenAPIPaths<D, X extends OpenAPIExtension> = Record<
-  `/${string}`,
+  OpenAPIPath,
   OpenAPIPathItem<D, X>
 >;
 
@@ -473,17 +484,6 @@ export async function ensureResolvedObject<T extends object, U extends object>(
 
   return resolvedObject;
 }
-
-export const PATH_ITEM_METHODS = [
-  'get',
-  'put',
-  'post',
-  'delete',
-  'options',
-  'head',
-  'patch',
-  'trace',
-] as const;
 
 export function pathItemToOperationMap<
   T extends OpenAPIPathItem<unknown, OpenAPIExtension>,
