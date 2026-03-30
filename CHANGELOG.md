@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.2...v2.0.3) (2026-03-30)
+
+
+### Bug Fixes
+
+* **types:** better type inference ([e7c7fef](https://github.com/nfroidure/ya-open-api-types/commit/e7c7fefea8fb42ead6e389729b455d4dccc2b465))
+
 ## [2.0.2](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.1...v2.0.2) (2026-03-30)
 
 
