@@ -523,7 +523,7 @@ export const COMPONENTS_TYPES: ComponentType[] = [
   'headers',
 ];
 
-export async function cleanupOpenAPI(api: OpenAPI): Promise<OpenAPI> {
+export async function cleanupOpenAPI<T extends OpenAPI>(api: T): Promise<T> {
   const usedReferences = [
     ...new Set([
       ...(await collectUsedReferences(
