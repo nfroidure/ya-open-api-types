@@ -115,7 +115,7 @@ export type OpenAPIEncoding<D, X extends OpenAPIExtension> = {
   allowReserved?: boolean;
 } & X;
 export type OpenAPIMediaType<D, X extends OpenAPIExtension> = {
-  schema?: D;
+  schema?: D | OpenAPIReference<D>;
   example?: JsonValue;
   examples?: JsonValue[];
   encoding?: Record<string, OpenAPIEncoding<D, X>>;
@@ -151,7 +151,7 @@ export type OpenAPIParameter<D, X extends OpenAPIExtension> = {
 ) &
   (
     | {
-        schema: D;
+        schema: D | OpenAPIReference<D>;
         style?:
           | 'matrix'
           | 'label'
@@ -184,7 +184,7 @@ export type OpenAPIHeader<D, X extends OpenAPIExtension> = {
   deprecated?: boolean;
 } & (
   | {
-      schema: D;
+      schema: D | OpenAPIReference<D>;
       style?: 'simple';
       explode?: boolean;
       allowReserved?: boolean;
