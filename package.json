@@ -77,8 +77,8 @@
   },
   "dependencies": {
     "type-fest": "^5.5.0",
-    "ya-json-schema-types": "^2.0.0",
-    "yerror": "^9.1.0"
+    "ya-json-schema-types": "^2.0.1",
+    "yerror": "^9.1.1"
   },
   "contributors": [],
   "engines": {
