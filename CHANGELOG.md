@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.0...v2.1.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* **types:** schema references ain't necessary ([74e0cf8](https://github.com/nfroidure/ya-open-api-types/commit/74e0cf82538f6f5d0c8c79c9ca4930f137f3e9b5))
+
 # [2.1.0](https://github.com/nfroidure/ya-open-api-types/compare/v2.0.3...v2.1.0) (2026-03-30)
 
 
