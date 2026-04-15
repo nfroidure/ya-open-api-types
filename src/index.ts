@@ -489,13 +489,19 @@ export function pathItemToOperationMap<
   T extends OpenAPIPathItem<unknown, OpenAPIExtension>,
 >(
   pathItem: T,
-): Record<
-  string,
-  T extends OpenAPIPathItem<infer D, infer X> ? OpenAPIOperation<D, X> : never
-> {
-  const operationMap: Record<
-    string,
+): Partial<
+  Record<
+    OpenAPIMethod,
     T extends OpenAPIPathItem<infer D, infer X> ? OpenAPIOperation<D, X> : never
+  >
+> {
+  const operationMap: Partial<
+    Record<
+      OpenAPIMethod,
+      T extends OpenAPIPathItem<infer D, infer X>
+        ? OpenAPIOperation<D, X>
+        : never
+    >
   > = {};
 
   for (const method of PATH_ITEM_METHODS) {
