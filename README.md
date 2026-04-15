@@ -5,14 +5,14 @@
 [//]: # (be overridden.)
 [//]: # ( )
 # ya-open-api-types
-> TypeScript types for OpenAPI 3.1
+> TypeScript types for OpenAPI 3.2
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/nfroidure/ya-open-api-types/blob/main/LICENSE)
 
 
 [//]: # (::contents:start)
 
-OpenAPI 3.1 types for TypeScript with a focus on making it customizable and to
+OpenAPI 3.2 types for TypeScript with a focus on making it customizable and to
 reuse some types definitions parts (all sub types defined are exported).
 
 The JSON schema definition is parametrized so that you can use your own
@@ -29,7 +29,7 @@ const myOpenAPI: OpenAPI<
     'x-my-extension': ('plop' | 'plip')[];
   }
 > = {
-  openapi: '3.1',
+  openapi: '3.2',
   info: {
     'x-my-extension': 'plop',
     title: 'Test',

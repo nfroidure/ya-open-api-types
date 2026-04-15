@@ -158,7 +158,7 @@ export type OpenAPIParameter<D, X extends OpenAPIExtension> = {
   allowEmptyValue?: boolean;
 } & (
   | {
-      in: 'path' | 'query' | 'header' | 'cookie';
+      in: 'path' | 'query' | 'querystring' | 'header' | 'cookie';
       required?: boolean;
     }
   | {
@@ -296,6 +296,7 @@ export type OpenAPIPathItem<D, X extends OpenAPIExtension> = {
   $ref?: string;
   summary?: string;
   description?: string;
+  additionalOperations?: Record<string, OpenAPIOperation<D, X>>;
   servers?: OpenAPIServer<X>[];
   parameters?: (
     | OpenAPIParameter<D, X>
@@ -361,12 +362,12 @@ export type OpenAPIPaths<D, X extends OpenAPIExtension> = Record<
   OpenAPIPathItem<D, X>
 >;
 
-/** Open API types for the 3.1 specification */
+/** Open API types for the 3.2 specification */
 export interface OpenAPI<
   D = JSONSchema,
   X extends OpenAPIExtension = OpenAPIExtension,
 > {
-  openapi: '3.1' | '3.1.0' | '3.1.1';
+  openapi: '3.1' | '3.1.0' | '3.1.1' | '3.2';
   info: OpenAPIInfo<X>;
   jsonSchemaDialect?: string;
   servers?: OpenAPIServer<X>[];

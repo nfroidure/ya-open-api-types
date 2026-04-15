@@ -15,6 +15,7 @@ export const PATH_ITEM_METHODS = [
   'head',
   'patch',
   'trace',
+  'query',
 ] as const;
 
 export type OpenAPIMethod = (typeof PATH_ITEM_METHODS)[number];

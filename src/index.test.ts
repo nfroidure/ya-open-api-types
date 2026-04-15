@@ -19,7 +19,7 @@ import {
 import { YError } from 'yerror';
 
 const openAPI: OpenAPI = {
-  openapi: '3.1',
+  openapi: '3.2',
   info: {
     title: 'Test',
     version: '0.0.0',
