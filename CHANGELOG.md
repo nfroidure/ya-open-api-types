@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.2...v2.1.3) (2026-04-15)
+
+
+### Bug Fixes
+
+* **types:** improve some return types ([e3af569](https://github.com/nfroidure/ya-open-api-types/commit/e3af5694e8e0dd2b871f7ac116fe98a36da35c06))
+
 ## [2.1.2](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.1...v2.1.2) (2026-04-07)
 
 ## [2.1.1](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.0...v2.1.1) (2026-04-01)
