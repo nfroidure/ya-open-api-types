@@ -639,3 +639,439 @@ export async function collectUsedReferences(
 
   return usedReferences;
 }
+
+export type SchemaPathItemLocation =
+  | {
+      path: OpenAPIPath;
+    }
+  | {
+      webhookName: string;
+    };
+export type SchemaOperationLocation = SchemaPathItemLocation &
+  (
+    | {
+        customMethod: string;
+      }
+    | {
+        method: OpenAPIMethod;
+      }
+  ) & {
+    callbacks?: {
+      callbackName: string;
+      callbackExpression: string;
+    }[];
+  };
+export type SchemaSchemaLocation = (
+  | SchemaOperationLocation
+  | {
+      components: 'schemas';
+    }
+) & { schemaName: string };
+export type SchemaParameterLocation = (
+  | SchemaPathItemLocation
+  | SchemaOperationLocation
+  | {
+      components: 'parameters';
+    }
+) & {
+  parameterName: string;
+};
+export type SchemaHeaderLocation = (
+  | SchemaOperationLocation
+  | {
+      components: 'headers';
+    }
+) & {
+  headerName: string;
+};
+export type SchemaResponseLocation = (
+  | SchemaOperationLocation
+  | {
+      components: 'responses';
+    }
+) & {
+  responseName: string;
+  responseType: string;
+};
+export type SchemaRequestBodyLocation = (
+  | SchemaOperationLocation
+  | {
+      components: 'requestBodies';
+    }
+) & {
+  requestBodyName: string;
+  requestBodyType: string;
+};
+export type SchemaLocation =
+  | SchemaSchemaLocation
+  | SchemaParameterLocation
+  | SchemaHeaderLocation
+  | SchemaResponseLocation
+  | SchemaRequestBodyLocation;
+
+/**
+ * In order to build validators from all schemas,
+ * we often need to collect each schemas of an API.
+ */
+export function collectAPISchemas<T extends JSONSchema>(
+  API: OpenAPI<T>,
+): {
+  schema: T;
+  location: SchemaLocation;
+}[] {
+  return [
+    ...(API?.components?.schemas
+      ? Object.keys(API.components.schemas).map((schemaName) => ({
+          schema: API.components?.schemas?.[schemaName] as T,
+          location: {
+            components: 'schemas',
+            schemaName,
+          } as SchemaLocation,
+        }))
+      : []),
+    ...collectHeadersSchemas(
+      { components: 'headers' },
+      API?.components?.headers,
+    ),
+    ...collectParametersSchemas(
+      { components: 'parameters' },
+      Object.values(API?.components?.parameters || {}),
+    ),
+    ...collectRequestBodiesSchemas(
+      { components: 'requestBodies' },
+      API?.components?.requestBodies,
+    ),
+    ...collectResponsesSchemas(
+      { components: 'responses' },
+      API?.components?.responses,
+    ),
+    ...collectPathsSchemas(API?.paths || {}),
+    ...collectWebHooksSchemas(API?.webhooks || {}),
+  ];
+}
+
+export function collectPathsSchemas<T extends JSONSchema>(
+  paths: NonNullable<OpenAPI<T>['paths']>,
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const path in paths) {
+    if (!isValidOpenAPIPath(path)) {
+      throw new YError('E_BAD_PATH', [path]);
+    }
+
+    schemas.push(
+      ...collectParametersSchemas(
+        {
+          path,
+        },
+        paths[path].parameters,
+      ),
+    );
+
+    schemas.push(
+      ...collectPathItemSchemas(
+        {
+          path,
+        },
+        paths[path],
+      ),
+    );
+  }
+
+  return schemas;
+}
+
+export function collectWebHooksSchemas<T extends JSONSchema>(
+  webhooks: NonNullable<OpenAPI<T>['webhooks']>,
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const webhookName in webhooks) {
+    schemas.push(
+      ...collectParametersSchemas(
+        {
+          webhookName,
+        },
+        webhooks[webhookName].parameters,
+      ),
+    );
+
+    schemas.push(
+      ...collectPathItemSchemas(
+        {
+          webhookName,
+        },
+        webhooks[webhookName],
+      ),
+    );
+  }
+
+  return schemas;
+}
+
+export function collectPathItemSchemas<T extends JSONSchema>(
+  location: SchemaPathItemLocation,
+  pathItem: NonNullable<NonNullable<OpenAPI<T>['paths']>[OpenAPIPath]>,
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const method in pathItemToOperationMap(pathItem)) {
+    if (!isValidOpenAPIMethod(method)) {
+      throw new YError('E_BAD_METHOD', [
+        'path' in location ? location.path : location.webhookName,
+        method,
+      ]);
+    }
+
+    const operation = pathItem[method];
+    const operationId = operation?.operationId;
+
+    if (!operationId) {
+      throw new YError('E_NO_OPERATION_ID', [
+        'path' in location ? location.path : location.webhookName,
+        method,
+      ]);
+    }
+
+    schemas.push(
+      ...collectOperationSchemas<T>({ ...location, method }, operation),
+    );
+  }
+
+  if (pathItem.additionalOperations) {
+    for (const customMethod in pathItem.additionalOperations) {
+      const operation = pathItem.additionalOperations[customMethod];
+      const operationId = operation?.operationId;
+
+      if (!operationId) {
+        throw new YError('E_NO_OPERATION_ID', [
+          'path' in location ? location.path : location.webhookName,
+          customMethod,
+        ]);
+      }
+
+      schemas.push(
+        ...collectOperationSchemas<T>({ ...location, customMethod }, operation),
+      );
+    }
+  }
+
+  return schemas;
+}
+
+export function collectOperationSchemas<T extends JSONSchema>(
+  location: SchemaOperationLocation,
+  operation: NonNullable<
+    NonNullable<NonNullable<OpenAPI<T>['paths']>[OpenAPIPath]>[OpenAPIMethod]
+  >,
+): {
+  schema: T;
+  location: SchemaLocation;
+}[] {
+  return [
+    ...collectParametersSchemas(location, operation.parameters),
+    ...(operation.requestBody
+      ? collectRequestBodiesSchemas(location, {
+          body: operation.requestBody,
+        })
+      : []),
+    ...collectResponsesSchemas(location, operation.responses),
+  ];
+}
+
+export function collectOperationCallbacksSchemas<T extends JSONSchema>(
+  location: SchemaOperationLocation,
+  callbacks: NonNullable<
+    NonNullable<
+      NonNullable<NonNullable<OpenAPI<T>['paths']>[OpenAPIPath]>[OpenAPIMethod]
+    >['callbacks']
+  >,
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const callbackName in callbacks) {
+    const callback = callbacks[callbackName];
+
+    if ('$ref' in callback) {
+      continue;
+    }
+    for (const callbackExpression in callback) {
+      schemas.push(
+        ...collectPathItemSchemas(
+          {
+            ...location,
+            callbacks: [
+              {
+                callbackName,
+                callbackExpression,
+              },
+            ],
+          } as SchemaOperationLocation,
+          callback[callbackExpression],
+        ),
+      );
+    }
+  }
+
+  return schemas;
+}
+
+export function collectParametersSchemas<T extends JSONSchema>(
+  location: Omit<SchemaParameterLocation, 'parameterName'>,
+  parameters: NonNullable<
+    NonNullable<OpenAPI<T>['components']>['parameters']
+  >[string][] = [],
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const parameter of parameters) {
+    if ('$ref' in parameter) {
+      continue;
+    }
+
+    if ('schema' in parameter) {
+      schemas.push({
+        location: {
+          ...location,
+          parameterName: parameter.name,
+        } as SchemaParameterLocation,
+        schema: parameter.schema,
+      });
+    }
+  }
+
+  return schemas;
+}
+
+export function collectHeadersSchemas<T extends JSONSchema>(
+  location: Omit<SchemaHeaderLocation, 'headerName'>,
+  headers: NonNullable<NonNullable<OpenAPI<T>['components']>['headers']> = {},
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const headerName in headers) {
+    const header = headers[headerName];
+
+    if ('$ref' in header) {
+      continue;
+    }
+
+    if ('schema' in header) {
+      schemas.push({
+        location: {
+          ...location,
+          headerName,
+        } as SchemaHeaderLocation,
+        schema: header.schema,
+      });
+    }
+  }
+
+  return schemas;
+}
+
+export function collectRequestBodiesSchemas<T extends JSONSchema>(
+  location: Omit<
+    SchemaRequestBodyLocation,
+    'requestBodyName' | 'requestBodyType'
+  >,
+  requestBodies: NonNullable<
+    NonNullable<OpenAPI<T>['components']>['requestBodies']
+  > = {},
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const requestBodyName in requestBodies) {
+    const requestBody = requestBodies[requestBodyName];
+
+    if ('$ref' in requestBody) {
+      continue;
+    }
+
+    for (const requestBodyType in requestBody.content) {
+      const requestBodyContent = requestBody.content[requestBodyType];
+
+      if (
+        !requestBodyContent ||
+        !('schema' in requestBodyContent) ||
+        typeof requestBodyContent.schema === 'undefined'
+      ) {
+        continue;
+      }
+
+      schemas.push({
+        location: {
+          ...location,
+          requestBodyName,
+          requestBodyType,
+        } as SchemaRequestBodyLocation,
+        schema: requestBodyContent.schema,
+      });
+    }
+  }
+  return schemas;
+}
+
+export function collectResponsesSchemas<T extends JSONSchema>(
+  location: Omit<SchemaResponseLocation, 'responseName' | 'responseType'>,
+  responses: NonNullable<
+    NonNullable<OpenAPI<T>['components']>['responses']
+  > = {},
+) {
+  const schemas: {
+    schema: T;
+    location: SchemaLocation;
+  }[] = [];
+
+  for (const responseName in responses) {
+    const response = responses[responseName];
+
+    if ('$ref' in response) {
+      continue;
+    }
+
+    for (const responseType in response.content) {
+      const responseContent = response.content[responseType];
+
+      if (
+        !responseContent ||
+        !('schema' in responseContent) ||
+        typeof responseContent.schema === 'undefined'
+      ) {
+        continue;
+      }
+
+      schemas.push({
+        location: {
+          ...location,
+          responseName,
+          responseType,
+        } as SchemaResponseLocation,
+        schema: responseContent.schema,
+      });
+    }
+  }
+  return schemas;
+}
