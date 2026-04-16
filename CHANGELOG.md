@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.3...v2.2.0) (2026-04-16)
+
+
+### Features
+
+* add a way to pick all schemas ([25cd6aa](https://github.com/nfroidure/ya-open-api-types/commit/25cd6aa9e9be26781ef6d105dff968cfce20434c))
+
 ## [2.1.3](https://github.com/nfroidure/ya-open-api-types/compare/v2.1.2...v2.1.3) (2026-04-15)
 
 
